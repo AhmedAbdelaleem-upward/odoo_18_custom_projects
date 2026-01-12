@@ -1,6 +1,3 @@
-# Ignore OCA repositories (they are cloned separately)
-OCA/
-
 # Python
 __pycache__/
 *.py[cod]
