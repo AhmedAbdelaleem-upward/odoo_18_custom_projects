@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+
+        <record id="account_move_only_access_own" model="ir.rule">
+            <field name="name">Account Move: Only Access Own Invoices</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="domain_force">[('invoice_user_id', '=', user.id)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0" />
+            <field name="groups" eval="[(4,ref('group_api_portal_access_user'))]"/>
+        </record>
+
+        <record id="account_move_line_only_access_own" model="ir.rule">
+            <field name="name">Account Move Line : Only Access Own Invoices Lines</field>
+            <field name="model_id" ref="account.model_account_move_line"/>
+            <field name="domain_force">[('move_id.invoice_user_id', '=', user.id)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0" />
+            <field name="groups" eval="[(4,ref('group_api_portal_access_user'))]"/>
+        </record>
+
+    </data>
+</odoo>

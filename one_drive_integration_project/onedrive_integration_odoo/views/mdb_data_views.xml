@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- List View for MDB Table Data -->
+    <record id="mdb_table_data_view_list" model="ir.ui.view">
+        <field name="name">mdb.table.data.list</field>
+        <field name="model">mdb.table.data</field>
+        <field name="arch" type="xml">
+            <list string="MDB Tables">
+                <field name="name"/>
+                <field name="table_name"/>
+                <field name="row_count"/>
+                <field name="read_date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View for MDB Table Data -->
+    <record id="mdb_table_data_view_form" model="ir.ui.view">
+        <field name="name">mdb.table.data.form</field>
+        <field name="model">mdb.table.data</field>
+        <field name="arch" type="xml">
+            <form string="MDB Table Data">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="table_name"/>
+                        </group>
+                        <group>
+                            <field name="row_count"/>
+                            <field name="read_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Columns">
+                            <field name="columns" widget="text"/>
+                        </page>
+                        <page string="Data (JSON)">
+                            <field name="data" widget="text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for MDB Table Data -->
+    <record id="mdb_table_data_action" model="ir.actions.act_window">
+        <field name="name">MDB Data</field>
+        <field name="res_model">mdb.table.data</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu item under OneDrive Dashboard -->
+    <menuitem id="mdb_data_menu"
+              name="MDB Data"
+              parent="onedrive_dashboard_menu_root"
+              action="mdb_table_data_action"
+              sequence="10"/>
+</odoo>

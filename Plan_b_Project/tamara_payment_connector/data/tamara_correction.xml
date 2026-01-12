@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Force update the provider to include the inline form view -->
+        <record id="payment_provider_tamara" model="payment.provider">
+            <field name="inline_form_view_id" ref="tamara_payment_connector.inline_form"/>
+        </record>
+    </data>
+</odoo>

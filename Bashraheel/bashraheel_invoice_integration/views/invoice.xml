@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_move_form_inherit_bashraheel_invoice_integration" model="ir.ui.view">
+            <field name="name">account.move.form.inherit.bashraheel_invoice_integration</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@id='other_tab_group']//group[@name='accounting_info_group']" position="after">
+                    <group string="Third-Party Integration" name="bashraheel_thirdparty_system">
+                        <group>
+                            <field name="thirdparty_invoice_no" invisible="country_code != 'SA' or move_type not in ('out_invoice', 'out_refund')" readonly="1"/>
+                            <field name="thirdparty_store_id" invisible="country_code != 'SA' or move_type not in ('out_invoice', 'out_refund')" readonly="1"/>
+                            <field name="l10n_sa_uuid" invisible="country_code != 'SA' or move_type not in ('out_invoice', 'out_refund')" readonly="1"/>
+                            <field name="l10n_sa_invoice_signature" invisible="country_code != 'SA' or move_type not in ('out_invoice', 'out_refund')" readonly="1"/>
+                            <field name="l10n_sa_chain_index" invisible="country_code != 'SA' or move_type not in ('out_invoice', 'out_refund')" readonly="1"/>
+                            <field name="thirdparty_sa_confirmation_datetime" invisible="country_code != 'SA' or move_type not in ('out_invoice', 'out_refund')" readonly="1"/>
+                            <field name="l10n_sa_confirmation_datetime" invisible="country_code != 'SA' or move_type not in ('out_invoice', 'out_refund')" readonly="1"/>
+                        </group>
+                    </group>
+                </xpath>
+                <xpath expr="//field[@name='invoice_line_ids']//field[@name='name']" position="after">
+                    <field name='thirdparty_sku_id' column_invisible="parent.move_type not in ('out_invoice', 'out_refund')"
+                           readonly="1"
+                    />
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_account_invoice_filter" model="ir.ui.view">
+            <field name="name">account.invoice.select.inherit</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="thirdparty_invoice_no" string="InvoiceNo"/>
+                </field>
+                <xpath expr="//search/filter[@name='myinvoices']">
+                    <filter string="Today" name="today"
+                            domain="[('create_date', '&gt;', (context_today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'))]"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

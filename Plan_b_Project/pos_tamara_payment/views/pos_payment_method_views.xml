@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pos_payment_method_view_form_inherit_tamara" model="ir.ui.view">
+        <field name="name">pos.payment.method.form.inherit.tamara</field>
+        <field name="model">pos.payment.method</field>
+        <field name="inherit_id" ref="point_of_sale.pos_payment_method_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='use_payment_terminal']" position="after">
+                <!-- Tamara API Token Field -->
+                <field name="tamara_api_token"
+                       invisible="use_payment_terminal != 'tamara'"
+                       required="use_payment_terminal == 'tamara' and not tamara_demo_mode"
+                       password="True"
+                       placeholder="Enter Tamara API Token (not needed in demo mode)"/>
+
+                <!-- Test Mode Checkbox -->
+                <field name="tamara_test_mode"
+                       invisible="use_payment_terminal != 'tamara'"
+                       required="use_payment_terminal == 'tamara'"/>
+
+                <!-- Demo Mode Configuration -->
+                <field name="tamara_demo_mode"
+                       invisible="use_payment_terminal != 'tamara'"
+                       widget="boolean_toggle"/>
+
+                <field name="tamara_demo_outcome"
+                       invisible="use_payment_terminal != 'tamara' or not tamara_demo_mode"
+                       widget="radio"/>
+
+                <field name="tamara_demo_delay"
+                       invisible="use_payment_terminal != 'tamara' or not tamara_demo_mode"/>
+
+                <!-- Webhook URL (read-only, for copying) -->
+                <field name="tamara_webhook_url"
+                       invisible="use_payment_terminal != 'tamara' or not id"
+                       widget="CopyClipboardChar"
+                       readonly="1"/>
+
+                <!-- Demo Mode Warning -->
+                <div invisible="use_payment_terminal != 'tamara' or not tamara_demo_mode"
+                     class="alert alert-warning" role="alert">
+                    <p><strong>⚠️ Demo Mode Active</strong></p>
+                    <p>This payment method is running in <strong>simulation mode</strong>:</p>
+                    <ul>
+                        <li>No real API calls to Tamara will be made</li>
+                        <li>No SMS will be sent to customers</li>
+                        <li>Payment outcomes are simulated based on your configuration</li>
+                        <li>Webhooks are triggered automatically after the configured delay</li>
+                        <li>Perfect for testing the payment flow without Tamara credentials</li>
+                    </ul>
+                    <p class="mb-0"><strong>Note:</strong> Remember to disable demo mode and configure real API credentials before going live!</p>
+                </div>
+
+                <!-- Setup Instructions -->
+                <div invisible="use_payment_terminal != 'tamara'" class="alert alert-info" role="alert">
+                    <p><strong>Quick Start - Demo Mode:</strong></p>
+                    <ol>
+                        <li>Enable <strong>Demo Mode</strong> above to test without credentials</li>
+                        <li>Configure demo outcome (approve/decline/timeout)</li>
+                        <li>Save and test in POS - no Tamara account needed!</li>
+                    </ol>
+
+                    <hr/>
+
+                    <p><strong>Production Setup (Real Payments):</strong></p>
+                    <ol>
+                        <li>Obtain your Tamara API Token from the <a href="https://partners.tamara.co" target="_blank">Tamara Partners Portal</a></li>
+                        <li>Enter the API Token in the field above</li>
+                        <li>Check "Test Mode" to use sandbox environment for testing</li>
+                        <li>Save the payment method</li>
+                        <li>Copy the Webhook URL above</li>
+                        <li>Go to your Tamara merchant dashboard webhook settings</li>
+                        <li>Add the webhook URL for payment notifications</li>
+                        <li>Test the integration with a sample transaction</li>
+                    </ol>
+                    <p class="mb-0"><strong>Important:</strong> Make sure your Odoo server is accessible from the internet for webhooks to work properly. Use HTTPS in production.</p>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

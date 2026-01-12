@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <!-- Account    -->
+    <record model="ir.model.access" id="account_api_portal_access_user">
+        <field name="name">Account : Api Portal Access User</field>
+        <field name="model_id" ref="account.model_account_account" />
+        <field name="group_id" ref="group_api_portal_access_user" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_create" eval="0" />
+        <field name="perm_write" eval="0" />
+        <field name="perm_unlink" eval="0" />
+    </record>
+
+    <!-- Journal -->
+    <record model="ir.model.access" id="journal_api_portal_access_user">
+        <field name="name">Journal : Api Portal Access User</field>
+        <field name="model_id" ref="account.model_account_journal" />
+        <field name="group_id" ref="group_api_portal_access_user" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_create" eval="0" />
+        <field name="perm_write" eval="0" />
+        <field name="perm_unlink" eval="0" />
+    </record>
+
+    <!-- Tax    -->
+    <record model="ir.model.access" id="tax_api_portal_access_user">
+        <field name="name">Tax : Api Portal Access User</field>
+        <field name="model_id" ref="account.model_account_tax" />
+        <field name="group_id" ref="group_api_portal_access_user" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_create" eval="0" />
+        <field name="perm_write" eval="0" />
+        <field name="perm_unlink" eval="0" />
+    </record>
+
+    <!-- Account Tag  -->
+    <record model="ir.model.access" id="account_tag_api_portal_access_user">
+        <field name="name">Account Tag : Api Portal Access User</field>
+        <field name="model_id" ref="account.model_account_account_tag" />
+        <field name="group_id" ref="group_api_portal_access_user" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_create" eval="0" />
+        <field name="perm_write" eval="0" />
+        <field name="perm_unlink" eval="0" />
+    </record>
+
+    <!-- Account Tax Repartition Line   -->
+    <record model="ir.model.access" id="account_tax_repartition_line_api_portal_access_user">
+        <field name="name">Account Tax Reparition Line : Api Portal Access User</field>
+        <field name="model_id" ref="account.model_account_tax_repartition_line" />
+        <field name="group_id" ref="group_api_portal_access_user" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_create" eval="0" />
+        <field name="perm_write" eval="0" />
+        <field name="perm_unlink" eval="0" />
+    </record>
+
+    <!-- Account Move   -->
+    <record model="ir.model.access" id="account_move_api_portal_access_user">
+        <field name="name">Account move : Api Portal Access User</field>
+        <field name="model_id" ref="account.model_account_move" />
+        <field name="group_id" ref="group_api_portal_access_user" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_create" eval="1" />
+        <field name="perm_write" eval="1" />
+        <field name="perm_unlink" eval="0" />
+    </record>
+
+    <!-- Account Move Line   -->
+    <record model="ir.model.access" id="account_move_line_api_portal_access_user">
+        <field name="name">Account Move Line : Api Portal Access User</field>
+        <field name="model_id" ref="account.model_account_move_line" />
+        <field name="group_id" ref="group_api_portal_access_user" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_create" eval="1" />
+        <field name="perm_write" eval="1" />
+        <field name="perm_unlink" eval="0" />
+    </record>
+
+</odoo>

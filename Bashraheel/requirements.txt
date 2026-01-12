@@ -1,0 +1,27 @@
+# Python dependencies for Bashraheel modules
+# Install with: pip install -r requirements.txt
+
+# ===================
+# FastAPI Core (OCA)
+# ===================
+fastapi>=0.110.0
+python-multipart
+ujson
+a2wsgi>=1.10.6
+parse-accept-language
+
+# ===================
+# JWT Authentication
+# ===================
+pyjwt
+
+# ===================
+# Pydantic Extensions
+# ===================
+pydantic>=2.0.0
+email-validator
+
+# ===================
+# Additional Utilities
+# ===================
+packaging

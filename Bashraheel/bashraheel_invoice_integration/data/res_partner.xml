@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Default Partner for Bashraheel Integration -->
+        <record id="res_partner_bashraheel_default" model="res.partner">
+            <field name="name">Bashraheel Partner</field>
+            <field name="email">api@bashraheel.com</field>
+            <field name="street">858 Riyadh Street</field>
+            <field name="city">Riyadh</field>
+            <field name="zip">11564</field>
+            <field name="phone">+966 11 000 0000</field>
+            <field name="mobile">+966 50 000 0000</field>
+            <field name="country_id" ref="base.sa"/>
+            <field name="company_name">Bashraheel Company</field>
+            <field name="image_1920" type="base64" file="base/static/img/partner_demo_portal.png"/>
+        </record>
+
+        <!-- Zatka Partner Dummy for using in invoices-->
+        <record id="res_partner_zatka_dummy" model="res.partner">
+            <field name="name">Zatka Partner</field>
+            <field name="email">info@zatka.sa</field>
+            <field name="phone">+966 11 234 5678</field>
+            <field name="mobile">+966 50 123 4567</field>
+            <field name="street">King Fahd Road, Building 123</field>
+            <field name="street2">Al Olaya District</field>
+            <field name="city">Riyadh</field>
+            <field name="zip">12214</field>
+            <field name="country_id" ref="base.sa"/>
+            <field name="vat">300012345678003</field>
+            <field name="company_name">Zatka Trading Company</field>
+            <field name="company_registry">1010123456</field>
+            <field name="image_1920" type="base64" file="base/static/img/partner_demo_portal.png"/>
+        </record>
+    </data>
+</odoo>

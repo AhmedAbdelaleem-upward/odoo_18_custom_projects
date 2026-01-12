@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="portal_user_bashraheel" context="{'no_reset_password': True}" model="res.users">
+            <field name="partner_id" ref="res_partner_bashraheel_default"/>
+            <field name="login">bashraheel_portal</field>
+            <field name="password">bashraheel_portal</field>
+            <field name="signature"><![CDATA[<span>-- <br/>Bashraheel Portal</span>]]></field>
+            <field name="groups_id" eval="[Command.link(ref('base.group_portal')), Command.link(ref('group_api_portal_access_user'))]"/>
+        </record>
+    </data>
+</odoo>

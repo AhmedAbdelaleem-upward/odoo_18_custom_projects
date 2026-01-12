@@ -1,0 +1,115 @@
+.left-sidebar {
+    background-color: #0632d1;
+    color: white;
+    border-radius: 5px;
+    width: 110px;
+}
+.files{
+    margin-top: 20px;
+    }
+.file-icon{
+    width: 65px;
+    margin-top: 42px;
+    margin-left: 5px;
+}
+.image{
+    opacity: 80%;
+    width: 55px;
+    margin-left: 10px;
+}
+.card-img-top{
+    width: 180px;
+    height: 180px;
+}
+.import{
+    background-color: #ffffff;
+    color: #0529ac;
+    border-radius: 5px;
+    width: 100px;
+    border-color: unset;
+    margin-left: 10px
+}
+.upload{
+    background-color: #2e08d7;
+    color: white;
+    border-radius: 5px;
+    width: 100px;
+    margin-left: 10px;
+}
+.card{
+    max-width: 15%;
+    height: 23rem;
+    border-radius: 1.25rem;
+    margin: 15px;
+}
+.onedrive-card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    height: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+// .onedrive-card-icon {
+//     width: 80px;
+//     height: 80px;
+//     object-fit: contain;
+// }
+.onedrive-card-name {
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.onedrive-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.onedrive-card-actions .btn {
+    font-size: 12px;
+    padding: 4px 10px;
+}
+
+.onedrive-card {
+    background: black;
+    border-radius: 16px;
+    padding: 16px;
+    height: 260px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    gap: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.onedrive-card-icon {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+// .onedrive-card img.onedrive-card-icon {
+//     display: block !important;
+//     visibility: visible !important;
+//     opacity: 1 !important;
+//     width: 120px !important;
+//     height: 120px !important;
+//     min-width: 120px !important;
+//     min-height: 120px !important;
+//     background: black !important;
+//     z-index: 9999 !important;
+//     position: relative !important;
+// }
