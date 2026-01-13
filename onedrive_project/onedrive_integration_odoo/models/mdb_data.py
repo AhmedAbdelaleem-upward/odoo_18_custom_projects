@@ -145,7 +145,8 @@ class MdbTableData(models.Model):
         if env_mode == 'development':
             _logger.info("Environment is DEVELOPMENT. Looking for local file...")
             
-            # Check multiple possible locations/names
+            # Check local file on Desktop
+            # User Request: In dev mode, ALWAYS force this specific file, regardless of what was clicked.
             possible_paths = [
                 os.path.expanduser("/home/ahmed/Desktop/odoo_mdb_92_att2000.mdb"),
                 os.path.expanduser("~/Desktop/odoo_mdb_92_att2000.mdb"),
@@ -157,6 +158,9 @@ class MdbTableData(models.Model):
                 if os.path.exists(p):
                     desktop_path = p
                     break
+             
+            if not desktop_path:
+                 _logger.warning("Development Mode: Local test file not found in paths: %s", possible_paths)
             
             if desktop_path:
                  temp_dir = tempfile.gettempdir()
@@ -382,7 +386,7 @@ class MdbTableData(models.Model):
                     rows_to_create = []
                 
                 if len(attendance_batch) >= BATCH_SIZE:
-                    self.env['onedrive.attendance'].create(attendance_batch)
+                    self._create_attendance_batch_safe(attendance_batch)
                     attendance_batch = []
             
             # Flush existing generic rows
@@ -392,16 +396,49 @@ class MdbTableData(models.Model):
 
             # Flush remaining attendance records
             if len(attendance_batch) > 0:
-                self.env['onedrive.attendance'].create(attendance_batch)
-                    # Commit strictly not needed here if running in Cron (will confirm at end of trans), 
-                    # but helps keep memory low in theory? access_parser is memory resident anyway.
-            
-            if rows_to_create:
-                self.env['mdb.table.row'].create(rows_to_create)
-                total_rows_created += len(rows_to_create)
+                self._create_attendance_batch_safe(attendance_batch)
 
             _logger.info("Finished table %s. Created %d rows.", table_name, total_rows_created)
 
         except Exception as e:
-            _logger.error("Error processing table %s: %s", table_name, str(e))
-            raise e
+            _logger.warning("Error processing table %s: %s", table_name, str(e))
+            # Don't raise, allowing other tables to process
+
+
+    def _create_attendance_batch_safe(self, batch_vals):
+        """Insert batch while ignoring duplicates (ON CONFLICT DO NOTHING)"""
+        if not batch_vals:
+            return
+            
+        # Odoo's ORM create() will raise error on duplicate.
+        # To support high-performance bulk insert with "skip duplicates", 
+        # we can use direct SQL 'INSERT ON CONFLICT' for PostgreSQL.
+        
+        # Prepare columns
+        # keys = list(batch_vals[0].keys())
+        
+        # Let's construct a cleaner query
+        query = """
+            INSERT INTO onedrive_attendance (
+                user_id, check_time, check_type, sensor_id, work_code, sn, mdb_file_id
+            ) VALUES 
+        """
+        params = []
+        placeholders = []
+        
+        for r in batch_vals:
+             placeholders.append("(%s, %s, %s, %s, %s, %s, %s)")
+             params.extend([
+                r['user_id'], 
+                r['check_time'], 
+                r['check_type'], 
+                r['sensor_id'], 
+                r['work_code'], 
+                r['sn'], 
+                r['mdb_file_id']
+             ])
+             
+        query += ", ".join(placeholders)
+        query += " ON CONFLICT (user_id, check_time, check_type, sensor_id) DO NOTHING"
+        
+        self.env.cr.execute(query, params)

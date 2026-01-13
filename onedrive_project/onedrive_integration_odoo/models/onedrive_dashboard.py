@@ -292,3 +292,53 @@ class OneDriveDashboard(models.Model):
                 'sticky': False,
             }
         }
+    def action_daily_sync(self):
+        """
+        Daily Scheduled Action:
+        1. Scan OneDrive for all .mdb files
+        2. Queue them for import (if not already pending/processing)
+        """
+        _logger.info("Starting Daily OneDrive Sync...")
+        try:
+             # 1. Get all files
+             files = self.action_synchronize_onedrive()
+             if not files:
+                 _logger.info("No files found on OneDrive.")
+                 return
+             
+             # 2. Filter MDBs
+             mdb_files = [f for f in files if f.get('is_mdb')]
+             _logger.info("Found %d MDB files to sync.", len(mdb_files))
+             
+             count_queued = 0
+             for f in mdb_files:
+                 # 3. Queue Import (reuse existing logic)
+                 # We check existing inside action_read_mdb_file but returns dict.
+                 # Let's call internal logic directly to be cleaner.
+                 
+                 existing = self.env['mdb.table.data'].search([
+                    ('name', '=', f['name']),
+                    ('status', 'in', ['pending', 'downloading', 'processing'])
+                 ], limit=1)
+                 
+                 if existing:
+                     _logger.info("Skipping %s (already in progress)", f['name'])
+                     continue
+                     
+                 # Create pending record
+                 self.env['mdb.table.data'].create({
+                    'name': f['name'],
+                    'table_name': 'Pending Import...',
+                    'status': 'pending',
+                    'download_url': f['download_url'],
+                    'onedrive_file_id': f['id'],
+                 })
+                 count_queued += 1
+                 
+             # Trigger processor
+             if count_queued > 0:
+                 self.env.ref('onedrive_integration_odoo.cron_process_mdb_import')._trigger()
+                 _logger.info("Queued %d files for background processing.", count_queued)
+                 
+        except Exception as e:
+            _logger.exception("Daily Sync Failed")

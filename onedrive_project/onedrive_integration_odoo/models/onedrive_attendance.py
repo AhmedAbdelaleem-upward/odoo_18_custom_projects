@@ -13,3 +13,8 @@ class OneDriveAttendance(models.Model):
     sn = fields.Char(string='Serial Number')
     
     mdb_file_id = fields.Many2one('mdb.table.data', string='Source File', ondelete='cascade')
+
+    _sql_constraints = [
+        ('unique_attendance', 'unique(user_id, check_time, check_type, sensor_id)', 
+         'Attendance record must be unique (User + Time + Type + Sensor)!')
+    ]
