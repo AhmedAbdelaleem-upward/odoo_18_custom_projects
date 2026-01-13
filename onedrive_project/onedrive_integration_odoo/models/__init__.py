@@ -22,3 +22,4 @@
 from . import onedrive_dashboard
 from . import res_config_settings
 from . import mdb_data
+from . import onedrive_attendance

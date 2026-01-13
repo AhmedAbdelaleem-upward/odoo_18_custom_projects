@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_onedrive_attendance_tree" model="ir.ui.view">
+        <field name="name">onedrive.attendance.tree</field>
+        <field name="model">onedrive.attendance</field>
+        <field name="arch" type="xml">
+            <list string="Attendance Logs" create="0" delete="0">
+                <field name="user_id"/>
+                <field name="check_time"/>
+                <field name="check_type"/>
+                <field name="sensor_id"/>
+                <field name="work_code" optional="hide"/>
+                <field name="sn" optional="hide"/>
+                <field name="mdb_file_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_onedrive_attendance_search" model="ir.ui.view">
+        <field name="name">onedrive.attendance.search</field>
+        <field name="model">onedrive.attendance</field>
+        <field name="arch" type="xml">
+            <search string="Search Attendance">
+                <field name="user_id"/>
+                <field name="sensor_id"/>
+                <field name="check_time"/>
+                <group expand="0" string="Group By">
+                    <filter string="User" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'check_time:day'}"/>
+                    <filter string="Check Type" name="group_type" context="{'group_by': 'check_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_onedrive_attendance" model="ir.actions.act_window">
+        <field name="name">Attendance Logs (Checked In/Out)</field>
+        <field name="res_model">onedrive.attendance</field>
+        <field name="view_mode">list,search</field>
+        <field name="context">{'search_default_group_date': 1}</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_onedrive_attendance"
+              name="Attendance Logs"
+              parent="onedrive_integration_odoo.onedrive_dashboard_menu_root"
+              action="action_onedrive_attendance"
+              sequence="20"/>
+</odoo>

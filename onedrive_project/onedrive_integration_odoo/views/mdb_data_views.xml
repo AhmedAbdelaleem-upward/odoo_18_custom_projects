@@ -5,11 +5,16 @@
         <field name="name">mdb.table.data.list</field>
         <field name="model">mdb.table.data</field>
         <field name="arch" type="xml">
-            <list string="MDB Tables">
+            <list string="MDB Tables" decoration-info="status == 'processing'" decoration-muted="status == 'pending'" decoration-danger="status == 'failed'" decoration-success="status == 'done'">
                 <field name="name"/>
                 <field name="table_name"/>
                 <field name="row_count"/>
                 <field name="read_date"/>
+                <field name="status" widget="badge" 
+                       decoration-info="status == 'processing'" 
+                       decoration-muted="status == 'pending'" 
+                       decoration-danger="status == 'failed'" 
+                       decoration-success="status == 'done'"/>
             </list>
         </field>
     </record>
@@ -20,22 +25,43 @@
         <field name="model">mdb.table.data</field>
         <field name="arch" type="xml">
             <form string="MDB Table Data">
+                <header>
+                    <button name="action_retry_import" string="Retry Import" type="object" class="btn-primary" 
+                            invisible="status not in ('failed', 'pending')"/>
+                    <field name="status" widget="statusbar" statusbar_visible="pending,downloading,processing,done"/>
+                </header>
                 <sheet>
+                    <!-- Error Message Alert -->
+                    <div class="alert alert-danger" role="status" invisible="status != 'failed'">
+                        <h4 class="alert-heading">Import Failed</h4>
+                        <field name="error_message"/>
+                    </div>
+
                     <group>
                         <group>
                             <field name="name"/>
                             <field name="table_name"/>
+                            <field name="download_url" groups="base.group_no_one"/>
                         </group>
                         <group>
                             <field name="row_count"/>
                             <field name="read_date"/>
+                            <field name="onedrive_file_id" groups="base.group_no_one"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Columns">
                             <field name="columns" widget="text"/>
                         </page>
-                        <page string="Data (JSON)">
+                        <page string="Data Rows">
+                            <field name="row_ids">
+                                <list limit="100">
+                                    <field name="id" optional="hide"/>
+                                    <field name="data"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Raw Data (Legacy)" invisible="1">
                             <field name="data" widget="text"/>
                         </page>
                     </notebook>

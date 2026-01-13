@@ -122,10 +122,10 @@ export class OnedriveDashboard extends Component {
             const result = await this.orm.call(
                 'onedrive.dashboard',
                 'action_read_mdb_file',
-                [[], file.download_url, file.name]
+                [[], file.download_url, file.name, file.id]
             );
 
-            // Execute the returned action (opens tree view)
+            // Execute the returned action (display notification)
             if (result) {
                 this.action.doAction(result);
             }

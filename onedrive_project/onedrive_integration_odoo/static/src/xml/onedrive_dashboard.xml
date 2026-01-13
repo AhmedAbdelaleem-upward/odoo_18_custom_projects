@@ -42,16 +42,6 @@
                             <img class="file-icon"
                                  src="/onedrive_integration_odoo/static/src/img/excel.png"/>
                         </div>
-                        <!-- File type: Text -->
-                        <!-- <div class="file-type" value="txt" t-on-click="filter_file_type">
-                            <img class="file-icon"
-                                 src="/onedrive_integration_odoo/static/src/img/txt.png"/>
-                        </div> -->
-                        <!-- File type: ZIP -->
-                        <!-- <div class="file-type" value="zip" t-on-click="filter_file_type">
-                            <img class="file-icon"
-                                 src="/onedrive_integration_odoo/static/src/img/zip.png"/>
-                        </div> -->
                     </div>
                 </div>
                 <!-- Content area to display OneDrive files -->
@@ -77,13 +67,13 @@
                                 <!-- ACTION BUTTONS -->
                                 <div class="onedrive-card-actions">
                                     <button class="btn btn-sm btn-primary"
-                                            t-on-click="() => downloadFile(file)">
+                                            t-on-click="() => this.downloadFile(file)">
                                         Download
                                     </button>
 
                                     <t t-if="file.is_mdb">
                                         <button class="btn btn-sm btn-secondary"
-                                                t-on-click="() => readMDB(file)">
+                                                t-on-click="() => this.readMDB(file)">
                                             Read MDB
                                         </button>
                                     </t>

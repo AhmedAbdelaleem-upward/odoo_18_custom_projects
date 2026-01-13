@@ -2,3 +2,5 @@ id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
 access_onedrive_dashboard_user,access.onedrive.dashboard.user,model_onedrive_dashboard,base.group_user,1,1,1,1
 access_upload_file_user,access.upload.file.user,model_upload_file,base.group_user,1,1,1,1
 access_mdb_table_data_user,access.mdb.table.data.user,model_mdb_table_data,base.group_user,1,1,1,1
+access_mdb_table_row_user,access.mdb.table.row.user,model_mdb_table_row,base.group_user,1,1,1,1
+access_onedrive_attendance,onedrive.attendance,model_onedrive_attendance,base.group_user,1,1,1,1

@@ -135,64 +135,6 @@ class OneDriveDashboard(models.Model):
                               error.response.content)
             raise error
 
-    # def action_synchronize_onedrive(self):
-    #     """
-    #     Pass the files to javascript
-    #     """
-    #     record = self.search([], order='id desc', limit=1)
-    #     if not record:
-    #         return False
-    #     if record.token_expiry_date <= str(fields.Datetime.now()):
-    #         record.generate_onedrive_refresh_token()
-    #     # folder = self.env['ir.config_parameter'].get_param(
-    #     #     'onedrive_integration_odoo.folder_id', '')
-    #     # if not folder:return False
-    #     # url = "https://graph.microsoft.com/v1.0/me/drive/items/%s/children" \
-    #     #       "?Content-Type=application/json" % folder
-        
-    #     folder_path = self.env['ir.config_parameter'].get_param(
-    #         'onedrive_integration_odoo.folder_id', ''
-    #     ).strip('/')
-
-    #     if folder_path:
-    #         url = f"https://graph.microsoft.com/v1.0/me/drive/root:/{folder_path}:/children"
-    #     else:
-    #         # EMPTY = list ALL folders/files
-    #         url = "https://graph.microsoft.com/v1.0/me/drive/root/children"
-            
-    #     response = requests.request("GET", url, headers={
-    #         # 'Authorization': 'Bearer "' + record.onedrive_access_token + '"'
-    #         'Authorization': 'Bearer ' + record.onedrive_access_token
-    #         },
-    #                                 data={})
-    #     message = json.loads(response.content)
-    #     if 'error' in message:
-    #         return ['error', message['error']['code'],
-    #                 message['error']['message']]
-    #     # files = {}
-    #     # for file in response.json().get('value'):
-    #     #     if list(file.keys())[0] == '@microsoft.graph.downloadUrl':
-    #     #         files[file['name']] = file['@microsoft.graph.downloadUrl']
-    #     # return files
-    #     files = {}
-
-    #     for file in response.json().get('value', []):
-    #         files_model = self.env['onedrive.file']
-    #         files_model.search([]).unlink()  # optional: refresh list
-
-    #         for file in response.json().get('value', []):
-    #             if '@microsoft.graph.downloadUrl' not in file:
-    #                 continue
-
-    #             name = file.get('name', '')
-    #             files_model.create({
-    #                 'name': name,
-    #                 'download_url': file['@microsoft.graph.downloadUrl'],
-    #                 'is_mdb': name.lower().endswith('.mdb'),
-    #             })
-
-    #     return files
-    
     def action_synchronize_onedrive(self):
         record = self.search([], order='id desc', limit=1)
         if not record:
@@ -245,6 +187,7 @@ class OneDriveDashboard(models.Model):
                 "name": item['name'],
                 "download_url": item['@microsoft.graph.downloadUrl'],
                 "is_mdb": item['name'].lower().endswith('.mdb'),
+                "id": item.get('id'), # Pass the ID
                 "icon": _get_icon(item['name']),   # 👈 ADD THIS
                 "ext": item['name'].split('.')[-1].lower(),  # 👈 ADD THIS
             }
@@ -302,32 +245,50 @@ class OneDriveDashboard(models.Model):
         return True
 
 
-    def action_read_mdb_file(self, download_url, filename):
+    def action_read_mdb_file(self, download_url, filename, onedrive_file_id=False):
         """
-        Download MDB file, read its contents using mdbtools,
-        and open a tree view showing the data.
+        Create a pending import record and trigger background processing.
         """
-        # First download the file
-        temp_path = self._download_mdb_file(download_url, filename)
-        _logger.info("Downloaded MDB file to: %s", temp_path)
-
-        # Read the MDB file and store data
-        MdbTableData = self.env['mdb.table.data']
-        records = MdbTableData.read_mdb_file(temp_path, filename)
-
-        if not records:
-            raise UserError("No data found in the MDB file.")
-
-        _logger.info("Created %d MDB table records", len(records))
-
-        # Return action to open tree view of the data
+        # Create pending record
+        _logger.info("Queuing MDB import for %s", filename)
+        
+        # Check if we already have a pending/processing import for this file
+        existing = self.env['mdb.table.data'].search([
+            ('name', '=', filename),
+            ('status', 'in', ['pending', 'downloading', 'processing'])
+        ], limit=1)
+        
+        if existing:
+             return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Import in Progress',
+                    'message': f"There is already an import running for {filename}.",
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
+            
+        import_record = self.env['mdb.table.data'].create({
+            'name': filename,
+            'table_name': 'Pending Import...',
+            'status': 'pending',
+            'download_url': download_url,
+            'onedrive_file_id': onedrive_file_id,
+        })
+        
+        # Trigger cron to run immediately
+        self.env.ref('onedrive_integration_odoo.cron_process_mdb_import')._trigger()
+        
+        # Notify user
         return {
-            'type': 'ir.actions.act_window',
-            'name': f'MDB Data: {filename}',
-            'res_model': 'mdb.table.data',
-            'view_mode': 'tree,form',
-            'domain': [('name', '=', filename)],
-            'target': 'current',
-            'context': {'default_name': filename},
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Import Started',
+                'message': f"Import for {filename} started in background. Please check MDB Data menu shortly.",
+                'type': 'success',
+                'sticky': False,
+            }
         }
-

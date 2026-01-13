@@ -36,10 +36,12 @@
     },
     'data': [
         'security/ir.model.access.csv',
-        'wizard/upload_file_views.xml',
-        'views/onedrive_dashboard_views.xml',
         'views/res_config_settings_views.xml',
+        'views/onedrive_dashboard_views.xml',
         'views/mdb_data_views.xml',
+        'views/onedrive_attendance_views.xml',
+        'wizard/upload_file_views.xml',
+        'data/ir_cron_data.xml',
     ],
     'assets': {
         'web.assets_backend': [
