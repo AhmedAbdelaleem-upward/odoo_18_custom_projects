@@ -1,0 +1,54 @@
+<odoo>
+    <data>
+        <record id="view_payment_reminder_client_tree" model="ir.ui.view">
+            <field name="name">payment.reminder.client.tree</field>
+            <field name="model">payment.reminder.client</field>
+            <field name="arch" type="xml">
+                <list string="Payment Reminder Clients">
+                    <field name="name"/>
+                    <field name="database_uuid"/>
+                    <field name="base_url"/>
+                    <field name="active_notification"/>
+                    <field name="notification_start_date"/>
+                    <field name="notification_end_date"/>
+                    <field name="last_seen"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_payment_reminder_client_form" model="ir.ui.view">
+            <field name="name">payment.reminder.client.form</field>
+            <field name="model">payment.reminder.client</field>
+            <field name="arch" type="xml">
+                <form string="Payment Reminder Client">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="database_uuid" readonly="1"/>
+                            <field name="base_url"/>
+                        </group>
+                        <group string="Notification Control">
+                            <field name="active_notification"/>
+                            <field name="notification_start_date"/>
+                            <field name="notification_end_date"/>
+                        </group>
+                        <group string="Color Thresholds (days)">
+                            <field name="green_threshold_days"/>
+                            <field name="yellow_threshold_days"/>
+                            <field name="red_threshold_days"/>
+                        </group>
+                        <group string="Message Templates (by Color)">
+                            <field name="template_green_id" options="{'no_create': True}"/>
+                            <field name="template_yellow_id" options="{'no_create': True}"/>
+                            <field name="template_red_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="last_seen" readonly="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
+

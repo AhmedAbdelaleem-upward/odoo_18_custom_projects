@@ -1,0 +1,34 @@
+<odoo>
+    <data noupdate="1">
+        <!-- Green Template (Safe) -->
+        <record id="template_payment_reminder_green_standard" model="payment.reminder.template">
+            <field name="name">Standard Green Reminder</field>
+            <field name="urgent_state">green</field>
+            <field name="sequence">10</field>
+            <field name="body">⚠تنبيه إلزامي – دفعة مستحقة
+يوجد التزام مالي مستحق على حسابكم لم يتم سداده حتى الآن.
+⏳متبقي {days} يوم فقط قبل إيقاف الخدمة تلقائياً دون أي إشعار إضافي.</field>
+        </record>
+
+        <!-- Yellow Template (Warning) -->
+        <record id="template_payment_reminder_yellow_standard" model="payment.reminder.template">
+            <field name="name">Standard Yellow Warning</field>
+            <field name="urgent_state">yellow</field>
+            <field name="sequence">10</field>
+            <field name="body">⛔تحذير نهائي – إجراء وشيك (لم يتم سداد الدفعة المستحقة حتى تاريخه)
+يرجى سداد الدفعة فوراً لضمان استمرار الخدمة.
+⏳سيتم إيقاف الخدمة تلقائياً خلال {days} أيام في حال عدم السداد.
+هذا الإجراء يتم وفق سياسة الاستخدام المعتمدة ولا يتطلب موافقة إضافية.</field>
+        </record>
+
+        <!-- Red Template (Critical) -->
+        <record id="template_payment_reminder_red_standard" model="payment.reminder.template">
+            <field name="name">Standard Red Critical</field>
+            <field name="urgent_state">red</field>
+            <field name="sequence">10</field>
+            <field name="body">🚫الخدمة موقوفة مؤقتاً بسبب التزامات مالية
+تم إيقاف الخدمة تلقائياً لعدم سداد الدفعة المستحقة ضمن المدة المحددة.
+ستعاد الخدمة فور إتمام السداد وتأكيد العملية.</field>
+        </record>
+    </data>
+</odoo>

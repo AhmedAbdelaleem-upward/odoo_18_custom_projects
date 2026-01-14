@@ -1,0 +1,5 @@
+<templates xml:space="preserve">
+    <!-- No OWL widget is required; banner is injected by plain JS.
+         This empty template file is kept to make it easy to move to an OWL widget later if needed. -->
+</templates>
+

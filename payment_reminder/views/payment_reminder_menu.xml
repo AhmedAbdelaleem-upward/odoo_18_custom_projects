@@ -1,0 +1,40 @@
+<odoo>
+    <data>
+        <record id="action_payment_reminder_client" model="ir.actions.act_window">
+            <field name="name">Clients (Payment Reminder)</field>
+            <field name="res_model">payment.reminder.client</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p>Manage client instances and their payment reminder settings.</p>
+            </field>
+        </record>
+
+        <!-- Top-level app menu so it appears in the main apps grid -->
+        <menuitem
+            id="menu_payment_reminder_root"
+            name="Payment Reminder"
+            web_icon="payment_reminder,static/description/icon.svg"
+            groups="payment_reminder.group_payment_reminder_upward_admin"
+            sequence="50"
+        />
+
+        <menuitem
+            id="menu_payment_reminder_clients"
+            name="Clients"
+            parent="menu_payment_reminder_root"
+            action="action_payment_reminder_client"
+            groups="payment_reminder.group_payment_reminder_upward_admin"
+            sequence="10"
+        />
+
+        <menuitem
+            id="menu_payment_reminder_templates"
+            name="Templates"
+            parent="menu_payment_reminder_root"
+            action="action_payment_reminder_template"
+            groups="payment_reminder.group_payment_reminder_upward_admin"
+            sequence="20"
+        />
+    </data>
+</odoo>
+

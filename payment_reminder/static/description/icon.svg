@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="#1f77d0"/>
+
+  <!-- Bell (notification) -->
+  <path d="M64 26
+           C48 26 40 36 40 50
+           V64
+           L34 74
+           H94
+           L88 64
+           V50
+           C88 36 80 26 64 26
+           Z"
+        fill="#ffffff"/>
+
+  <!-- Bell clapper -->
+  <circle cx="64" cy="80" r="6" fill="#ffffff"/>
+
+  <!-- Currency / payment bar -->
+  <rect x="32" y="88" width="64" height="18" rx="4" fill="#ffb347"/>
+  <path d="M46 96
+           H64
+           M55 92
+           V104"
+        stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+</svg>
+

@@ -11,9 +11,12 @@
         "security/payment_reminder_security.xml",
         "security/ir.model.access.csv",
         "data/payment_reminder_cron.xml",
-        "views/payment_reminder_menu.xml",
+        "data/payment_reminder_data.xml",
+        "data/payment_reminder_templates.xml",
         "views/payment_reminder_client_views.xml",
+        "views/payment_reminder_template_views.xml",
         "views/res_config_settings_views.xml",
+        "views/payment_reminder_menu.xml",
     ],
     "assets": {
         "web.assets_backend": [
@@ -22,6 +25,6 @@
         ],
     },
     "installable": True,
-    "application": False,
+    "application": True,
 }
 

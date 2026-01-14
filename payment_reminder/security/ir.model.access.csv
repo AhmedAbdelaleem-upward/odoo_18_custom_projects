@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_payment_reminder_client_admin,payment.reminder.client admin,model_payment_reminder_client,group_payment_reminder_upward_admin,1,1,1,1
+access_payment_reminder_template_admin,payment.reminder.template admin,model_payment_reminder_template,group_payment_reminder_upward_admin,1,1,1,1
+
