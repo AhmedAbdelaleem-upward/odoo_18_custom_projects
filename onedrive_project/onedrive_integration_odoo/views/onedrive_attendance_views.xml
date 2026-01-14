@@ -11,6 +11,9 @@
                 <field name="check_type"/>
                 <field name="sensor_id"/>
                 <field name="work_code" optional="hide"/>
+                <field name="verify_code" optional="hide"/>
+                <field name="user_ext_fmt" optional="hide"/>
+                <field name="memo_info" optional="hide"/>
                 <field name="sn" optional="hide"/>
                 <field name="mdb_file_id" optional="hide"/>
             </list>

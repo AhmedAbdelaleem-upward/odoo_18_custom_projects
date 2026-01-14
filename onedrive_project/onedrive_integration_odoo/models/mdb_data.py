@@ -369,6 +369,9 @@ class MdbTableData(models.Model):
                             'sensor_id': str(get_raw('SENSORID')),
                             'work_code': str(get_raw('WorkCode')),
                             'sn': str(get_raw('sn')),
+                            'verify_code': str(get_raw('VERIFYCODE')),
+                            'user_ext_fmt': str(get_raw('UserExtFmt')),
+                            'memo_info': str(get_raw('Memoinfo')),
                             'mdb_file_id': self.id,
                         }
                         attendance_batch.append(att_vals)
@@ -420,21 +423,25 @@ class MdbTableData(models.Model):
         # Let's construct a cleaner query
         query = """
             INSERT INTO onedrive_attendance (
-                user_id, check_time, check_type, sensor_id, work_code, sn, mdb_file_id
+                user_id, check_time, check_type, sensor_id, work_code, sn, 
+                verify_code, user_ext_fmt, memo_info, mdb_file_id
             ) VALUES 
         """
         params = []
         placeholders = []
         
         for r in batch_vals:
-             placeholders.append("(%s, %s, %s, %s, %s, %s, %s)")
+             placeholders.append("(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
              params.extend([
                 r['user_id'], 
                 r['check_time'], 
                 r['check_type'], 
                 r['sensor_id'], 
                 r['work_code'], 
-                r['sn'], 
+                r['sn'],
+                r['verify_code'],
+                r['user_ext_fmt'],
+                r['memo_info'],
                 r['mdb_file_id']
              ])
              
