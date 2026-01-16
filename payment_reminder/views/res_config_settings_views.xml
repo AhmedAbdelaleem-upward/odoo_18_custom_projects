@@ -16,9 +16,7 @@
                             <setting string="Upward Master URL" help="Base URL of the Upward master instance (used by client instances only).">
                                 <field name="payment_reminder_master_url" placeholder="e.g. http://upward.example.com:8069"/>
                             </setting>
-                            <setting string="API Secret Key" help="Shared secret key. Must match between Master and Client instances.">
-                                <field name="payment_reminder_api_key" password="True"/>
-                            </setting>
+
                         </block>
                     </app>
                 </xpath>

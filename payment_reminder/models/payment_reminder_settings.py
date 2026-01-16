@@ -17,10 +17,7 @@ class PaymentReminderSettings(models.TransientModel):
         string="Upward Master Base URL",
         help="Base URL of the Upward master instance, used by client instances for API calls.",
     )
-    payment_reminder_api_key = fields.Char(
-        string="API Secret Key",
-        help="Shared secret key. Must match between Master and Client instances.",
-    )
+
 
     @api.model
     def get_values(self):
@@ -33,9 +30,7 @@ class PaymentReminderSettings(models.TransientModel):
             payment_reminder_master_url=params.get_param(
                 "payment_reminder.master_url", default=""
             ),
-            payment_reminder_api_key=params.get_param(
-                "payment_reminder.api_key", default=""
-            ),
+
         )
         return res
 
@@ -44,5 +39,5 @@ class PaymentReminderSettings(models.TransientModel):
         params = self.env["ir.config_parameter"].sudo()
         params.set_param("payment_reminder.role", self.payment_reminder_role or "client_instance")
         params.set_param("payment_reminder.master_url", self.payment_reminder_master_url or "")
-        params.set_param("payment_reminder.api_key", self.payment_reminder_api_key or "")
+
 

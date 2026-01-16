@@ -39,8 +39,7 @@ class PaymentReminderClientBanner(http.Controller):
         if not master_url or not database_uuid:
             return {"active": False}
         
-        # Retrieve the shared secret key
-        api_key = params.get_param("payment_reminder.api_key", "")
+
 
         try:
             # Normalize master base URL (no trailing slash)
@@ -50,7 +49,7 @@ class PaymentReminderClientBanner(http.Controller):
 
             headers = {
                 "Content-Type": "application/json",
-                "X-Odoo-Payment-Reminder-Secret": api_key,
+
             }
 
             # Register/refresh this client on the master (JSON-RPC format)
@@ -87,4 +86,3 @@ class PaymentReminderClientBanner(http.Controller):
             _logger.exception("Error while contacting Upward master for payment reminder: %s", e)
 
         return {"active": False}
-

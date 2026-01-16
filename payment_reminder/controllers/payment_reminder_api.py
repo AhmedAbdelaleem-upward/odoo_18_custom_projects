@@ -8,25 +8,6 @@ _logger = logging.getLogger(__name__)
 
 
 class PaymentReminderAPI(http.Controller):
-    def _check_api_key(self, request):
-        """Check if the request contains the correct API key.
-
-        Returns True if the check passes or if no API key is configured on the master.
-        """
-        env = request.env
-        expected_key = (
-            env["ir.config_parameter"]
-            .sudo()
-            .get_param("payment_reminder.api_key", "")
-        )
-        if not expected_key:
-            # If no key is configured on master, allow all (backward compatibility/open mode)
-            # OR you could decide to block all. For now, we allow if not configured.
-            return True
-
-        # Check header
-        client_key = request.httprequest.headers.get("X-Odoo-Payment-Reminder-Secret")
-        return client_key == expected_key
 
     @http.route(
         "/payment_reminder/register",
@@ -37,8 +18,6 @@ class PaymentReminderAPI(http.Controller):
     )
     def register_client(self, **payload):
         """Public endpoint called from client instances to register/update themselves on Upward."""
-        if not self._check_api_key(request):
-            return {"status": "forbidden", "reason": "invalid_key"}
 
         env = request.env
         if (
@@ -70,8 +49,7 @@ class PaymentReminderAPI(http.Controller):
     )
     def get_client_config(self, database_uuid, **kwargs):
         """Return current notification configuration for a client identified by database_uuid."""
-        if not self._check_api_key(request):
-            return {"active": False, "reason": "invalid_key"}
+
 
         env = request.env
         if (
@@ -94,17 +72,14 @@ class PaymentReminderAPI(http.Controller):
         start = client.notification_start_date
         end = client.notification_end_date
 
-        # Check if notification is active based on date range
         active = False
         if start and today >= start and (not end or today <= end):
             active = True
 
-        # Days remaining until end date (payment deadline), for color logic
         days_remaining = None
         if end:
             days_remaining = (end - today).days
 
-        # Determine color based on days remaining to deadline
         color = "green"
         if days_remaining is not None:
             if client.red_threshold_days is not None and days_remaining <= client.red_threshold_days:
@@ -150,4 +125,3 @@ class PaymentReminderAPI(http.Controller):
             "end_date": str(end) if end else None,
         }
         return res
-
