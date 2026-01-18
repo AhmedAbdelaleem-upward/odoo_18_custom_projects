@@ -47,7 +47,30 @@ def create_invoice_router(registry, uid, context):
         "/create",
         response_model=CreateInvoiceResponse,
         summary="Create invoices from third-party POS",
-        description="Create one or more invoices from third-party POS data and submit to ZATCA",
+        description="""
+Create one or more invoices from third-party POS data and submit to ZATCA.
+
+## Invoice Types
+- **out_invoice**: Regular sales invoice
+- **out_refund**: Refund/Credit Note (requires `main_invoiceNo` and `out_refund_type`)
+
+## Refund Types
+- **partial**: Refund specific items (uses provided `lines`)
+- **full**: Full reversal of original invoice (ignores `lines` but requires at least one dummy line)
+
+## Required Fields
+| Field | Description |
+|-------|-------------|
+| invoiceNo | Unique third-party invoice reference |
+| move_type | `out_invoice` or `out_refund` |
+| documentDate | Invoice date (YYYY-MM-DD) |
+| store.id | Store identifier (must exist in Odoo journals) |
+| lines | At least one line item |
+
+## Notes
+- `thirdparty_sa_confirmation_datetime` is used for ZATCA compliance
+- Invoice numbers must be unique across the system
+        """,
     )
     @handle_router_errors
     def create_invoices(
@@ -104,7 +127,7 @@ def create_invoice_router(registry, uid, context):
         "/report",
         response_model=ReportInvoicesResponse,
         summary="Query invoice status",
-        description="Query invoices for a specific store and date with ZATCA status",
+        description="Query invoices for a specific store and date with ZATCA submission status. Returns response fields: odoo_invoice_id, odoo_invoice_no, thirdparty_invoice_no, gross_amount, net_amount, tax_amount, invoice_odoo_status, invoice_zatka_status, qr_code.",
     )
     @handle_router_errors
     def report_invoices(

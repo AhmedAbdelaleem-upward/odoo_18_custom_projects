@@ -33,7 +33,7 @@ Creates one or more invoices and submits to ZATCA.
 
 ```bash
 curl -X 'POST' 'http://localhost:8061/api/v1/invoice/create' \
-  -H 'Authorization: Bearer <TOKEN>' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJwYXJ0bmVyX2lkIjozLCJlbWFpbCI6ImFkbWluIiwidHlwZSI6ImFjY2VzcyIsImV4cCI6MTc2ODczNjczMywiaWF0IjoxNzY4NzMzMTMzfQ.nQYSrei8__k2Ak0wdZl7DZ5NB5LraN7K-GUZxePlrLA' \
   -H 'Content-Type: application/json' \
   -d '{
     "invoiceList": [{
@@ -72,19 +72,19 @@ Creates partial or full refunds for existing invoices.
 #### Partial Refund
 ```bash
 curl -X 'POST' 'http://localhost:8061/api/v1/invoice/create' \
-  -H 'Authorization: Bearer <TOKEN>' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJwYXJ0bmVyX2lkIjozLCJlbWFpbCI6ImFkbWluIiwidHlwZSI6ImFjY2VzcyIsImV4cCI6MTc2ODczNjczMywiaWF0IjoxNzY4NzMzMTMzfQ.nQYSrei8__k2Ak0wdZl7DZ5NB5LraN7K-GUZxePlrLA' \
   -H 'Content-Type: application/json' \
   -d '{
     "invoiceList": [{
-      "invoiceNo": "REF-001",
-      "main_invoiceNo": "INV-001",
+      "invoiceNo": "REF-020",
+      "main_invoiceNo": "INV-020",
       "move_type": "out_refund",
       "out_refund_type": "partial",
       "documentDate": "2025-02-16",
       "thirdparty_sa_confirmation_datetime": "2025-02-16 10:30:00",
       "store": {"id": "STORE001"},
       "lines": [
-        {"skuCode": "PRODUCT-SKU", "qty": 1, "sellingPrice": 50.0, "discount": 0}
+        {"skuCode": "PRODUCT-SKU", "qty": 1, "sellingPrice": 5000.0, "discount": 0}
       ]
     }]
   }'
@@ -93,12 +93,12 @@ curl -X 'POST' 'http://localhost:8061/api/v1/invoice/create' \
 #### Full Refund
 ```bash
 curl -X 'POST' 'http://localhost:8061/api/v1/invoice/create' \
-  -H 'Authorization: Bearer <TOKEN>' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJwYXJ0bmVyX2lkIjozLCJlbWFpbCI6ImFkbWluIiwidHlwZSI6ImFjY2VzcyIsImV4cCI6MTc2ODczNjczMywiaWF0IjoxNzY4NzMzMTMzfQ.nQYSrei8__k2Ak0wdZl7DZ5NB5LraN7K-GUZxePlrLA' \
   -H 'Content-Type: application/json' \
   -d '{
     "invoiceList": [{
-      "invoiceNo": "REF-002",
-      "main_invoiceNo": "INV-001",
+      "invoiceNo": "REF-021",
+      "main_invoiceNo": "INV-020",
       "move_type": "out_refund",
       "out_refund_type": "full",
       "documentDate": "2025-02-16",

@@ -45,6 +45,53 @@ class CreateInvoiceRequest(BaseModel):
     """Schema for creating invoices (batch)"""
     invoiceList: List[InvoiceRequest] = Field(..., min_length=1, description="List of invoices to create")
 
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "invoiceList": [{
+                        "invoiceNo": "INV-001",
+                        "move_type": "out_invoice",
+                        "documentDate": "2025-02-15",
+                        "thirdparty_sa_confirmation_datetime": "2025-02-15 10:30:00",
+                        "store": {"id": "STORE001"},
+                        "lines": [
+                            {"skuCode": "FURN_0001", "qty": 2, "sellingPrice": 100.0, "discount": 0}
+                        ]
+                    }]
+                },
+                {
+                    "invoiceList": [{
+                        "invoiceNo": "REF-001",
+                        "main_invoiceNo": "INV-001",
+                        "move_type": "out_refund",
+                        "out_refund_type": "partial",
+                        "documentDate": "2025-02-16",
+                        "thirdparty_sa_confirmation_datetime": "2025-02-16 11:00:00",
+                        "store": {"id": "STORE001"},
+                        "lines": [
+                            {"skuCode": "FURN_0001", "qty": 1, "sellingPrice": 100.0, "discount": 0}
+                        ]
+                    }]
+                },
+                {
+                    "invoiceList": [{
+                        "invoiceNo": "REF-002",
+                        "main_invoiceNo": "INV-001",
+                        "move_type": "out_refund",
+                        "out_refund_type": "full",
+                        "documentDate": "2025-02-16",
+                        "thirdparty_sa_confirmation_datetime": "2025-02-16 11:00:00",
+                        "store": {"id": "STORE001"},
+                        "lines": [
+                            {"skuCode": "DUMMY", "qty": 1, "sellingPrice": 0, "discount": 0}
+                        ]
+                    }]
+                }
+            ]
+        }
+    }
+
 
 # ============ Invoice Response Schemas ============
 
@@ -75,6 +122,14 @@ class ReportInvoicesRequest(BaseModel):
     """Schema for querying invoices"""
     store_id: str = Field(..., description="Store identifier")
     date: str = Field(..., description="Invoice date (YYYY-MM-DD)")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {"store_id": "STORE001", "date": "2025-02-15"}
+            ]
+        }
+    }
 
 
 class InvoiceReportItem(BaseModel):
