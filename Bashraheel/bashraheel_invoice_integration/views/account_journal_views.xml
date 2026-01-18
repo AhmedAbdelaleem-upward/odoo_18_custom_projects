@@ -7,13 +7,13 @@
             <field name="model">account.journal</field>
             <field name="inherit_id" ref="account.view_account_journal_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//notebook" position="inside">
-                    <page name="thirdparty_integration_system" string="Third-Party Integration" invisible="country_code != 'SA' or type != 'sale'">
+                <xpath expr="//page[@name='advanced_settings']" position="after">
+                    <page name="thirdparty_integration_system" string="Third-Party Integration">
                         <group>
                             <group>
-                                <field name="thirdparty_store_id" readonly="1"/>
-                                <field name="thirdparty_store_code" readonly="1"/>
-                                <field name="thirdparty_store_name" readonly="1"/>
+                                <field name="thirdparty_store_id"/>
+                                <field name="thirdparty_store_code"/>
+                                <field name="thirdparty_store_name"/>
                             </group>
                             <group>
                                 <field name="l10n_sa_serial_number" readonly="1"/>
