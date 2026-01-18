@@ -14,12 +14,19 @@ parse-accept-language
 # JWT Authentication
 # ===================
 pyjwt
+cryptography
 
 # ===================
 # Pydantic Extensions
 # ===================
 pydantic>=2.0.0
 email-validator
+typing-extensions
+
+# ===================
+# Extendable (OCA)
+# ===================
+extendable>=0.0.4
 
 # ===================
 # Additional Utilities
