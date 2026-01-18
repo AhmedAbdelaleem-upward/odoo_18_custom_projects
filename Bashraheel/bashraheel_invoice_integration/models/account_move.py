@@ -316,63 +316,93 @@ class AccountMove(models.Model):
                 return {"status": "error", "message": msg}
 
         try:
-            _logger.debug("Invoice %s: Processing %d line items", invoiceNo, len(invoice_lines))
-            for invoice_line in invoice_lines:
-                # Validate each line item
-                validation_error = self._validate_invoice_line(invoice_line, invoiceNo)
-                if validation_error:
-                    return validation_error
+            with self.env.cr.savepoint():
+                _logger.debug("Invoice %s: Processing %d line items", invoiceNo, len(invoice_lines))
+                
+                # Determine fallback account
+                income_account = journal_store.default_account_id
+                if not income_account:
+                    # Fallback to any Income account if journal default not set
+                    # Note: Odoo 18 uses company_ids for shared accounts
+                    income_account = self.env['account.account'].search([
+                        ('account_type', '=', 'income_other'), 
+                        ('company_ids', '=', journal_store.company_id.id)
+                    ], limit=1)
+                    if not income_account:
+                        # Try broader search if specific type fails
+                        income_account = self.env['account.account'].search([
+                            ('account_type', 'in', ['income', 'income_other']), 
+                            ('company_ids', '=', journal_store.company_id.id)
+                        ], limit=1)
+                
+                if not income_account:
+                     return {"status": "error", "message": "No Income Account found. Please configure Journal Default Account."}
 
-                skuid = invoice_line.get('skuid', "")
-                skuCode = invoice_line.get('skuCode', "").strip()
-                sellingPrice = float(invoice_line.get('sellingPrice', 0))
-                qty = float(invoice_line.get('qty', 0))
-                discount = float(invoice_line.get('discount', 0))
-                invoice_line_ids.append((0, 0, {"thirdparty_sku_id": skuid, "name": skuCode, "quantity": qty,
-                                                "price_unit": sellingPrice, "discount": discount}))
-            if move_type == 'out_invoice':
-                _logger.info("Invoice %s: Creating customer invoice", invoiceNo)
-                invoice_data = {
-                    "partner_id": customer_data.id,
-                    "journal_id": journal_store.id,
-                    "move_type": move_type,
-                    "invoice_date": documentDate,
-                    "thirdparty_sa_confirmation_datetime": thirdparty_sa_confirmation_datetime,
-                    "thirdparty_invoice_no": invoiceNo,
-                    "invoice_line_ids": invoice_line_ids
-                }
-                invoice_created = self._account_move_out_invoice(invoice_data)
-            elif move_type == 'out_refund':
-                main_invoiceNo = dct_invoice.get('main_invoiceNo')
-                out_refund_type = dct_invoice.get('out_refund_type')
-                _logger.info("Invoice %s: Creating refund (%s) for invoice %s", invoiceNo, out_refund_type, main_invoiceNo)
-                if not main_invoiceNo:
-                    _logger.error("Invoice %s: Missing main invoice number for refund", invoiceNo)
-                    return {"status": "error", "message": "Main Invoice No is required"}
-                if not out_refund_type:
-                    _logger.error("Invoice %s: Missing refund type", invoiceNo)
-                    return {"status": "error", "message": "Out Refund Type is required"}
+                for invoice_line in invoice_lines:
+                    # Validate each line item
+                    validation_error = self._validate_invoice_line(invoice_line, invoiceNo)
+                    if validation_error:
+                        return validation_error
+
+                    skuid = invoice_line.get('skuid', "")
+                    skuCode = invoice_line.get('skuCode', "").strip()
+                    sellingPrice = float(invoice_line.get('sellingPrice', 0))
+                    qty = float(invoice_line.get('qty', 0))
+                    discount = float(invoice_line.get('discount', 0))
+                    
+                    line_vals = {
+                        "thirdparty_sku_id": skuid, 
+                        "name": skuCode, 
+                        "quantity": qty,
+                        "price_unit": sellingPrice, 
+                        "discount": discount,
+                        "account_id": income_account.id
+                    }
+                    invoice_line_ids.append((0, 0, line_vals))
+                    
+                if move_type == 'out_invoice':
+                    _logger.info("Invoice %s: Creating customer invoice", invoiceNo)
+                    invoice_data = {
+                        "partner_id": customer_data.id,
+                        "journal_id": journal_store.id,
+                        "move_type": move_type,
+                        "invoice_date": documentDate,
+                        "thirdparty_sa_confirmation_datetime": thirdparty_sa_confirmation_datetime,
+                        "thirdparty_invoice_no": invoiceNo,
+                        "invoice_line_ids": invoice_line_ids
+                    }
+                    invoice_created = self._account_move_out_invoice(invoice_data)
+                elif move_type == 'out_refund':
+                    main_invoiceNo = dct_invoice.get('main_invoiceNo')
+                    out_refund_type = dct_invoice.get('out_refund_type')
+                    _logger.info("Invoice %s: Creating refund (%s) for invoice %s", invoiceNo, out_refund_type, main_invoiceNo)
+                    if not main_invoiceNo:
+                        _logger.error("Invoice %s: Missing main invoice number for refund", invoiceNo)
+                        return {"status": "error", "message": "Main Invoice No is required"}
+                    if not out_refund_type:
+                        _logger.error("Invoice %s: Missing refund type", invoiceNo)
+                        return {"status": "error", "message": "Out Refund Type is required"}
+                    else:
+                        if out_refund_type not in ['full', 'partial']:
+                            _logger.error("Invoice %s: Invalid refund type %s", invoiceNo, out_refund_type)
+                            return {"status": "error", "message": "Out Refund Type is wrong"}
+                    invoice_created = self._account_move_out_refund(journal_store, main_invoiceNo, invoiceNo, out_refund_type,
+                                                                    documentDate, thirdparty_sa_confirmation_datetime,
+                                                                    invoice_line_ids)
+                if not invoice_created.exists():
+                    _logger.error("Invoice %s: Failed to create invoice record", invoiceNo)
+                    return {"status": "error", "message": f"Error while creating invoice with number ({invoiceNo})"}
+
+                _logger.info("Invoice %s: Posting invoice with ID %s", invoiceNo, invoice_created.id)
+                invoice_created.action_post()
+
+                _logger.info("Invoice %s: Submitting to ZATCA", invoiceNo)
+                invoice_created.action_process_edi_web_services()
+
+                if invoice_created.edi_state in ['sent', 'to_send']:
+                    _logger.info("Invoice %s: ZATCA submission successful (state: %s)", invoiceNo, invoice_created.edi_state)
                 else:
-                    if out_refund_type not in ['full', 'partial']:
-                        _logger.error("Invoice %s: Invalid refund type %s", invoiceNo, out_refund_type)
-                        return {"status": "error", "message": "Out Refund Type is wrong"}
-                invoice_created = self._account_move_out_refund(journal_store, main_invoiceNo, invoiceNo, out_refund_type,
-                                                                documentDate, thirdparty_sa_confirmation_datetime,
-                                                                invoice_line_ids)
-            if not invoice_created.exists():
-                _logger.error("Invoice %s: Failed to create invoice record", invoiceNo)
-                return {"status": "error", "message": f"Error while creating invoice with number ({invoiceNo})"}
-
-            _logger.info("Invoice %s: Posting invoice with ID %s", invoiceNo, invoice_created.id)
-            invoice_created.action_post()
-
-            _logger.info("Invoice %s: Submitting to ZATCA", invoiceNo)
-            invoice_created.action_process_edi_web_services()
-
-            if invoice_created.edi_state in ['sent', 'to_send']:
-                _logger.info("Invoice %s: ZATCA submission successful (state: %s)", invoiceNo, invoice_created.edi_state)
-            else:
-                _logger.warning("Invoice %s: ZATCA submission may have issues (state: %s)", invoiceNo, invoice_created.edi_state)
+                    _logger.warning("Invoice %s: ZATCA submission may have issues (state: %s)", invoiceNo, invoice_created.edi_state)
         except Exception as error:
             if isinstance(error, psycopg2.OperationalError) \
                     and error.pgcode in CONCURRENCY_ERRORS:
@@ -450,9 +480,9 @@ class AccountMove(models.Model):
     def _account_move_out_refund(self, journal_store, main_invoiceNo, invoiceNo, out_refund_type, documentDate,
                                  thirdparty_sa_confirmation_datetime, invoice_line_ids, return_reason='Product issue'):
         invoice_created = self.env['account.move']
-        invoice_previous_period = (fields.Date.today() + timedelta(days=-50)).strftime('%Y-%m-%d')
-        domain_thirdparty = [('thirdparty_invoice_no', '=', main_invoiceNo), ('state', '=', 'posted'),
-                       ('invoice_date', '>=', invoice_previous_period)]
+        # invoice_previous_period = (fields.Date.today() + timedelta(days=-50)).strftime('%Y-%m-%d')
+        domain_thirdparty = [('thirdparty_invoice_no', '=', main_invoiceNo), ('state', '=', 'posted')]
+        # Removed date filter to allow refunding older invoices
         main_invoice = self.env['account.move'].search(domain_thirdparty, limit=1)
 
         if documentDate > fields.Date.today():
