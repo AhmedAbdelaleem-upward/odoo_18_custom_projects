@@ -65,44 +65,44 @@ curl -X 'POST' 'http://localhost:8061/api/v1/invoice/create' \
 
 ### 2. Create Refund
 
-**POST** `/invoice/create`
+**POST** `/invoice/create-return`
 
-Creates partial or full refunds for existing invoices.
+Creates partial or full refunds for existing invoices. Use `/create-return` specifically for refund operations.
 
-#### Partial Refund
+#### Partial Refund (50% of original invoice)
 ```bash
-curl -X 'POST' 'http://localhost:8061/api/v1/invoice/create' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJwYXJ0bmVyX2lkIjozLCJlbWFpbCI6ImFkbWluIiwidHlwZSI6ImFjY2VzcyIsImV4cCI6MTc2ODczNjczMywiaWF0IjoxNzY4NzMzMTMzfQ.nQYSrei8__k2Ak0wdZl7DZ5NB5LraN7K-GUZxePlrLA' \
+curl -X 'POST' 'http://localhost:8061/api/v1/invoice/create-return' \
+  -H 'Authorization: Bearer <TOKEN>' \
   -H 'Content-Type: application/json' \
   -d '{
     "invoiceList": [{
-      "invoiceNo": "REF-020",
-      "main_invoiceNo": "INV-020",
+      "invoiceNo": "RET-PARTIAL-001",
+      "main_invoiceNo": "INV-001",
       "move_type": "out_refund",
       "out_refund_type": "partial",
-      "documentDate": "2025-02-16",
-      "thirdparty_sa_confirmation_datetime": "2025-02-16 10:30:00",
+      "documentDate": "2025-02-18",
+      "thirdparty_sa_confirmation_datetime": "2025-02-18 11:00:00",
       "store": {"id": "STORE001"},
       "lines": [
-        {"skuCode": "PRODUCT-SKU", "qty": 1, "sellingPrice": 5000.0, "discount": 0}
+        {"skuCode": "ITEM-B", "qty": 1, "sellingPrice": 200.0, "discount": 0}
       ]
     }]
   }'
 ```
 
-#### Full Refund
+#### Full Refund (reverses entire invoice)
 ```bash
-curl -X 'POST' 'http://localhost:8061/api/v1/invoice/create' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJwYXJ0bmVyX2lkIjozLCJlbWFpbCI6ImFkbWluIiwidHlwZSI6ImFjY2VzcyIsImV4cCI6MTc2ODczNjczMywiaWF0IjoxNzY4NzMzMTMzfQ.nQYSrei8__k2Ak0wdZl7DZ5NB5LraN7K-GUZxePlrLA' \
+curl -X 'POST' 'http://localhost:8061/api/v1/invoice/create-return' \
+  -H 'Authorization: Bearer <TOKEN>' \
   -H 'Content-Type: application/json' \
   -d '{
     "invoiceList": [{
-      "invoiceNo": "REF-021",
-      "main_invoiceNo": "INV-020",
+      "invoiceNo": "RET-FULL-001",
+      "main_invoiceNo": "INV-001",
       "move_type": "out_refund",
       "out_refund_type": "full",
-      "documentDate": "2025-02-16",
-      "thirdparty_sa_confirmation_datetime": "2025-02-16 10:30:00",
+      "documentDate": "2025-02-18",
+      "thirdparty_sa_confirmation_datetime": "2025-02-18 12:00:00",
       "store": {"id": "STORE001"},
       "lines": [{"skuCode": "DUMMY", "qty": 1, "sellingPrice": 0, "discount": 0}]
     }]
