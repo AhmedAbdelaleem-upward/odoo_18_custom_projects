@@ -4,7 +4,7 @@
     "summary": "Generic payment reminder with central Upward master and client instances.",
     "category": "Tools",
     "author": "Upward",
-    "website": "https://upward.example.com",
+    "website": "https://upwardtech.odoo.com",
     "license": "LGPL-3",
     "depends": ["base", "web"],
     "data": [
