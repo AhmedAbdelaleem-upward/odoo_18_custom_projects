@@ -1,0 +1,194 @@
+{
+    "info": {
+        "name": "Bashraheel Invoice Integration API",
+        "description": "FastAPI endpoints for invoice management with ZATCA compliance.\n\nBase URL: http://localhost:8061/api/v1\n\n## Authentication\nAll endpoints require JWT Bearer token. Use the Login endpoint first to get a token.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8061/api/v1"
+        },
+        {
+            "key": "access_token",
+            "value": ""
+        }
+    ],
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.data && jsonData.data.access_token) {",
+                                    "    pm.collectionVariables.set('access_token', jsonData.data.access_token);",
+                                    "    console.log('Token saved to collection variables');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"login\": \"admin\",\n  \"password\": \"admin\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Authenticate and get JWT tokens. The access_token is automatically saved to collection variables."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Invoice",
+            "item": [
+                {
+                    "name": "Create Invoice",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"invoiceList\": [\n    {\n      \"invoiceNo\": \"INV-001\",\n      \"move_type\": \"out_invoice\",\n      \"documentDate\": \"2025-02-15\",\n      \"thirdparty_sa_confirmation_datetime\": \"2025-02-15 10:30:00\",\n      \"store\": {\"id\": \"STORE001\"},\n      \"lines\": [\n        {\"skuCode\": \"ITEM-A\", \"qty\": 2, \"sellingPrice\": 100.0, \"discount\": 0},\n        {\"skuCode\": \"ITEM-B\", \"qty\": 1, \"sellingPrice\": 200.0, \"discount\": 0}\n      ]\n    }\n  ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/invoice/create",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "invoice",
+                                "create"
+                            ]
+                        },
+                        "description": "Create one or more invoices and submit to ZATCA.\n\n**Required Fields:**\n- invoiceNo: Unique invoice reference\n- move_type: 'out_invoice' for sales\n- documentDate: Format YYYY-MM-DD\n- store.id: Store identifier\n- lines: At least one line item with skuCode, qty, sellingPrice"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Partial Refund",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"invoiceList\": [\n    {\n      \"invoiceNo\": \"RET-PARTIAL-001\",\n      \"main_invoiceNo\": \"INV-001\",\n      \"move_type\": \"out_refund\",\n      \"out_refund_type\": \"partial\",\n      \"documentDate\": \"2025-02-18\",\n      \"thirdparty_sa_confirmation_datetime\": \"2025-02-18 11:00:00\",\n      \"store\": {\"id\": \"STORE001\"},\n      \"lines\": [\n        {\"skuCode\": \"ITEM-B\", \"qty\": 1, \"sellingPrice\": 200.0, \"discount\": 0}\n      ]\n    }\n  ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/invoice/create-return",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "invoice",
+                                "create-return"
+                            ]
+                        },
+                        "description": "Create a partial refund for specific items.\n\n**Required Fields:**\n- invoiceNo: Unique refund reference\n- main_invoiceNo: Original invoice to refund\n- out_refund_type: 'partial'\n- lines: Items to refund with amounts"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Full Refund",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"invoiceList\": [\n    {\n      \"invoiceNo\": \"RET-FULL-001\",\n      \"main_invoiceNo\": \"INV-001\",\n      \"move_type\": \"out_refund\",\n      \"out_refund_type\": \"full\",\n      \"documentDate\": \"2025-02-18\",\n      \"thirdparty_sa_confirmation_datetime\": \"2025-02-18 12:00:00\",\n      \"store\": {\"id\": \"STORE001\"},\n      \"lines\": [\n        {\"skuCode\": \"DUMMY\", \"qty\": 1, \"sellingPrice\": 0, \"discount\": 0}\n      ]\n    }\n  ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/invoice/create-return",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "invoice",
+                                "create-return"
+                            ]
+                        },
+                        "description": "Create a full refund that reverses the entire invoice.\n\n**Note:** Full refunds ignore 'lines' but require at least one dummy line for validation.\n\n**Required Fields:**\n- invoiceNo: Unique refund reference\n- main_invoiceNo: Original invoice to refund\n- out_refund_type: 'full'"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Report Invoices",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"store_id\": \"STORE001\",\n  \"date\": \"2025-02-15\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/invoice/report",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "invoice",
+                                "report"
+                            ]
+                        },
+                        "description": "Query invoices by store and date.\n\n**Response includes:**\n- odoo_invoice_id, odoo_invoice_no\n- thirdparty_invoice_no\n- gross_amount, net_amount, tax_amount\n- invoice_odoo_status (draft/posted/cancel)\n- invoice_zatka_status (ZATCA EDI status)\n- qr_code"
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}
