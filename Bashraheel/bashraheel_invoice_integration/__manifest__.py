@@ -1,7 +1,7 @@
 {
     'name': "Bashraheel Invoice Integration With Zatka",
     'countries': ['sa'],
-    'version': '1.0',
+    "version": "18.0.1.0.0",
     'summary': "API to receive invoice data from third-party systems and submit to ZATKA",
     'description': """
     This module provides a REST API to receive invoice data from third-party systems,

@@ -162,6 +162,6 @@ Check the status of invoices and get ZATCA details (QR Code, Status, Hash).
 ```
 
 ## 4. Troubleshooting
-- **"Store Is Wrong":** Check the **Third-Party Store ID** in the Journal configuration.
+    - **"Product with SKU not found":** Ensure a Product exists in Odoo with the `Internal Reference` (default_code) matching the `skuCode`.
 - **"InvoiceNo is exist":** You are sending a duplicate `invoiceNo`.
 - **"Token has expired":** Re-authenticate using the `/auth/login` endpoint.

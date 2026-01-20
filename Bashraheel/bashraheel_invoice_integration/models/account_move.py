@@ -319,24 +319,7 @@ class AccountMove(models.Model):
             with self.env.cr.savepoint():
                 _logger.debug("Invoice %s: Processing %d line items", invoiceNo, len(invoice_lines))
                 
-                # Determine fallback account
-                income_account = journal_store.default_account_id
-                if not income_account:
-                    # Fallback to any Income account if journal default not set
-                    # Note: Odoo 18 uses company_ids for shared accounts
-                    income_account = self.env['account.account'].search([
-                        ('account_type', '=', 'income_other'), 
-                        ('company_ids', '=', journal_store.company_id.id)
-                    ], limit=1)
-                    if not income_account:
-                        # Try broader search if specific type fails
-                        income_account = self.env['account.account'].search([
-                            ('account_type', 'in', ['income', 'income_other']), 
-                            ('company_ids', '=', journal_store.company_id.id)
-                        ], limit=1)
-                
-                if not income_account:
-                     return {"status": "error", "message": "No Income Account found. Please configure Journal Default Account."}
+                # income_account logic removed as we use product_id now
 
                 for invoice_line in invoice_lines:
                     # Validate each line item
@@ -349,14 +332,20 @@ class AccountMove(models.Model):
                     sellingPrice = float(invoice_line.get('sellingPrice', 0))
                     qty = float(invoice_line.get('qty', 0))
                     discount = float(invoice_line.get('discount', 0))
+
+                    # Product Lookup
+                    product = self.env['product.product'].search([('default_code', '=', skuCode)], limit=1)
+                    if not product:
+                        _logger.error("Invoice %s: Product with SKU %s not found", invoiceNo, skuCode)
+                        return {"status": "error", "message": f"Product with SKU {skuCode} not found"}
                     
                     line_vals = {
                         "thirdparty_sku_id": skuid, 
                         "name": skuCode, 
+                        "product_id": product.id,
                         "quantity": qty,
                         "price_unit": sellingPrice, 
                         "discount": discount,
-                        "account_id": income_account.id
                     }
                     invoice_line_ids.append((0, 0, line_vals))
                     
