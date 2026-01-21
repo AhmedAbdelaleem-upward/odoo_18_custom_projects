@@ -30,7 +30,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['base_setup'],
+    'depends': ['base_setup', 'hr_attendance'],
     'external_dependencies': {
         'python': ['access_parser'],
     },
@@ -40,6 +40,7 @@
         'views/onedrive_dashboard_views.xml',
         'views/mdb_data_views.xml',
         'views/onedrive_attendance_views.xml',
+        'views/hr_employee_views.xml',
         'wizard/upload_file_views.xml',
         'data/ir_cron_data.xml',
     ],

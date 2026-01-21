@@ -32,8 +32,8 @@
                 </header>
                 <sheet>
                     <!-- Error Message Alert -->
-                    <div class="alert alert-danger" role="status" invisible="status != 'failed'">
-                        <h4 class="alert-heading">Import Failed</h4>
+                    <div class="alert alert-danger" role="alert" invisible="status != 'failed'">
+                        <h4 class="fw-bold mb-2">Import Failed</h4>
                         <field name="error_message"/>
                     </div>
 

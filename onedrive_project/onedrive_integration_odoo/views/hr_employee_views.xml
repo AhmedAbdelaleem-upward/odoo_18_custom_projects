@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Inherit Employee Form to add Fingerprint User ID -->
+    <record id="hr_employee_view_form_fingerprint" model="ir.ui.view">
+        <field name="name">hr.employee.form.fingerprint</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <!-- Add fingerprint_user_id to HR Settings tab -->
+            <xpath expr="//page[@name='hr_settings']//group[@name='identification_group']" position="inside">
+                <field name="fingerprint_user_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

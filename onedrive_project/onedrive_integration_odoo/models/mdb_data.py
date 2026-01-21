@@ -101,19 +101,6 @@ class MdbTableData(models.Model):
                 # Download file
                 file_path = pending_record._download_from_onedrive()
                 
-                # Backup to Desktop before processing (User Request)
-                try:
-                    desktop_path = os.path.expanduser("~/Desktop")
-                    if os.path.exists(desktop_path):
-                        backup_path = os.path.join(desktop_path, os.path.basename(file_path))
-                        import shutil
-                        shutil.copy2(file_path, backup_path)
-                        _logger.info("Backup created at %s", backup_path)
-                    else:
-                        _logger.warning("Desktop folder not found at %s", desktop_path)
-                except Exception as bkp_e:
-                    _logger.warning("Failed to create backup: %s", str(bkp_e))
-
                 pending_record.write({'status': 'processing'})
                 self.env.cr.commit()
 
@@ -123,7 +110,7 @@ class MdbTableData(models.Model):
                 pending_record.write({'status': 'done'})
                 _logger.info("Background import completed for %s", pending_record.name)
                 
-                # Cleanup tmp file only (Desktop backup remains)
+                # Cleanup temp file
                 if os.path.exists(file_path):
                     os.remove(file_path)
 
@@ -137,44 +124,9 @@ class MdbTableData(models.Model):
                 self.env.cr.commit()
 
     def _download_from_onedrive(self):
-        """Download file using stored URL or copy from Desktop in Dev mode"""
+        """Download file from OneDrive using stored URL"""
         self.ensure_one()
         
-        # Environment Check
-        env_mode = config.get('onedrive_environment')
-        if env_mode == 'development':
-            _logger.info("Environment is DEVELOPMENT. Looking for local file...")
-            
-            # Check local file on Desktop
-            # User Request: In dev mode, ALWAYS force this specific file, regardless of what was clicked.
-            possible_paths = [
-                os.path.expanduser("/home/ahmed/Desktop/odoo_mdb_92_att2000.mdb"),
-                os.path.expanduser("~/Desktop/odoo_mdb_92_att2000.mdb"),
-                os.path.expanduser("~/Desktop/att2000.mdb")
-            ]
-            
-            desktop_path = None
-            for p in possible_paths:
-                if os.path.exists(p):
-                    desktop_path = p
-                    break
-             
-            if not desktop_path:
-                 _logger.warning("Development Mode: Local test file not found in paths: %s", possible_paths)
-            
-            if desktop_path:
-                 temp_dir = tempfile.gettempdir()
-                 clean_name = "".join([c for c in self.name if c.isalpha() or c.isdigit() or c in (' ', '.', '_')]).rstrip()
-                 file_path = os.path.join(temp_dir, f"odoo_mdb_{self.id}_{clean_name}")
-                 
-                 import shutil
-                 shutil.copy2(desktop_path, file_path)
-                 _logger.info("Copied local file from %s to %s", desktop_path, file_path)
-                 return file_path
-            else:
-                _logger.warning("Development mode enabled but no file found at %s. Falling back to download.", possible_paths)
-                # Fallthrough to download logic if not found
-
         url = self.download_url
         if not url:
              raise UserError("No download URL provided")
@@ -424,14 +376,14 @@ class MdbTableData(models.Model):
         query = """
             INSERT INTO onedrive_attendance (
                 user_id, check_time, check_type, sensor_id, work_code, sn, 
-                verify_code, user_ext_fmt, memo_info, mdb_file_id
+                verify_code, user_ext_fmt, memo_info, mdb_file_id, sync_status
             ) VALUES 
         """
         params = []
         placeholders = []
         
         for r in batch_vals:
-             placeholders.append("(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+             placeholders.append("(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending')")
              params.extend([
                 r['user_id'], 
                 r['check_time'], 
