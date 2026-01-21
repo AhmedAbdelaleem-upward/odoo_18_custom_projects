@@ -1,5 +1,7 @@
 from odoo import models, fields, api
 import logging
+import traceback
+from datetime import time, datetime
 
 _logger = logging.getLogger(__name__)
 
@@ -188,16 +190,15 @@ class OneDriveAttendance(models.Model):
                     
                     # Close previous if still open
                     if last_attendance and not last_attendance.check_out:
-                         check_in_date = last_attendance.check_in.date()
-                         from datetime import time, datetime
-                         close_time = datetime.combine(check_in_date, time(23, 59, 59))
-                         last_attendance.write({
+                        check_in_date = last_attendance.check_in.date()
+                        close_time = datetime.combine(check_in_date, time(23, 59, 59))
+                        last_attendance.write({
                             'check_out': close_time,
                             'out_mode': 'kiosk', 
-                         })
-                         if employee.id in local_open_attendance:
-                             del local_open_attendance[employee.id]
-                         _logger.info(f"Auto-closed previous attendance {last_attendance.id}")
+                        })
+                        if employee.id in local_open_attendance:
+                            del local_open_attendance[employee.id]
+                        _logger.info(f"Auto-closed previous attendance {last_attendance.id}")
 
                     # Create NEW Record with both check_in and check_out set
                     # This ensures single logs become complete records
@@ -220,13 +221,13 @@ class OneDriveAttendance(models.Model):
                     _logger.info(f"Created new record {hr_att.id} from {log_type} for {employee.name} at {log.check_time}")
 
                 except Exception as e:
-                    import traceback
                     _logger.error(traceback.format_exc())
                     log.write({
                         'sync_status': 'error',
                         'sync_error': str(e),
                     })
                     error_count += 1
+
 
         _logger.info(f"Fingerprint sync completed: {synced_count} synced, {error_count} errors")
         return True

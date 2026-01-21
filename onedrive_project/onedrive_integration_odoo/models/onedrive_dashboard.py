@@ -197,54 +197,6 @@ class OneDriveDashboard(models.Model):
 
 
 
-    def _read_mdb_data(self, mdb_path):
-        import pyodbc
-
-        conn = pyodbc.connect(
-            r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            f'DBQ={mdb_path};'
-        )
-
-        cursor = conn.cursor()
-        tables = cursor.tables(tableType='TABLE')
-
-        result = {}
-
-        for table in tables:
-            table_name = table.table_name
-            cursor.execute(f"SELECT * FROM [{table_name}]")
-            columns = [col[0] for col in cursor.description]
-            rows = cursor.fetchall()
-
-            result[table_name] = {
-                'columns': columns,
-                'rows': [list(row) for row in rows]
-            }
-
-        conn.close()
-        return result
-
-
-    def _download_mdb_file(self, download_url, filename):
-        import tempfile
-        import os
-
-        response = requests.get(download_url)
-        response.raise_for_status()
-
-        temp_dir = tempfile.gettempdir()
-        file_path = os.path.join(temp_dir, filename)
-
-        with open(file_path, 'wb') as f:
-            f.write(response.content)
-
-        return file_path
-
-    def action_download_file(self, download_url, filename):
-        self._download_mdb_file(download_url, filename)
-        return True
-
-
     def action_read_mdb_file(self, download_url, filename, onedrive_file_id=False):
         """
         Create a pending import record and trigger background processing.
