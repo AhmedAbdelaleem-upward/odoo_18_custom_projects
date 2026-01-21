@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>OneDrive Integration - Implementor Guide</title>
+  <style>
+    /* From extension vscode.github */
+    /*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+    .vscode-dark img[src$=\#gh-light-mode-only],
+    .vscode-light img[src$=\#gh-dark-mode-only],
+    .vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+    .vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+      display: none;
+    }
+  </style>
+
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+  </style>
+  <style>
+    .task-list-item {
+      list-style-type: none;
+    }
+
+    .task-list-item-checkbox {
+      margin-left: -20px;
+      vertical-align: middle;
+      pointer-events: none;
+    }
+  </style>
+  <style>
+    :root {
+      --color-note: #0969da;
+      --color-tip: #1a7f37;
+      --color-warning: #9a6700;
+      --color-severe: #bc4c00;
+      --color-caution: #d1242f;
+      --color-important: #8250df;
+    }
+  </style>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-note: #2f81f7;
+        --color-tip: #3fb950;
+        --color-warning: #d29922;
+        --color-severe: #db6d28;
+        --color-caution: #f85149;
+        --color-important: #a371f7;
+      }
+    }
+  </style>
+  <style>
+    .markdown-alert {
+      padding: 0.5rem 1rem;
+      margin-bottom: 16px;
+      color: inherit;
+      border-left: .25em solid #888;
+    }
+
+    .markdown-alert>:first-child {
+      margin-top: 0
+    }
+
+    .markdown-alert>:last-child {
+      margin-bottom: 0
+    }
+
+    .markdown-alert .markdown-alert-title {
+      display: flex;
+      font-weight: 500;
+      align-items: center;
+      line-height: 1
+    }
+
+    .markdown-alert .markdown-alert-title .octicon {
+      margin-right: 0.5rem;
+      display: inline-block;
+      overflow: visible !important;
+      vertical-align: text-bottom;
+      fill: currentColor;
+    }
+
+    .markdown-alert.markdown-alert-note {
+      border-left-color: var(--color-note);
+    }
+
+    .markdown-alert.markdown-alert-note .markdown-alert-title {
+      color: var(--color-note);
+    }
+
+    .markdown-alert.markdown-alert-important {
+      border-left-color: var(--color-important);
+    }
+
+    .markdown-alert.markdown-alert-important .markdown-alert-title {
+      color: var(--color-important);
+    }
+
+    .markdown-alert.markdown-alert-warning {
+      border-left-color: var(--color-warning);
+    }
+
+    .markdown-alert.markdown-alert-warning .markdown-alert-title {
+      color: var(--color-warning);
+    }
+
+    .markdown-alert.markdown-alert-tip {
+      border-left-color: var(--color-tip);
+    }
+
+    .markdown-alert.markdown-alert-tip .markdown-alert-title {
+      color: var(--color-tip);
+    }
+
+    .markdown-alert.markdown-alert-caution {
+      border-left-color: var(--color-caution);
+    }
+
+    .markdown-alert.markdown-alert-caution .markdown-alert-title {
+      color: var(--color-caution);
+    }
+  </style>
+
+</head>
+
+<body class="vscode-body vscode-light">
+  <h1 id="onedrive-integration---implementor-guide">OneDrive Integration - Implementor Guide</h1>
+  <p>This guide is for Odoo implementors setting up the OneDrive Fingerprint Attendance Integration module.</p>
+  <hr>
+  <h2 id="table-of-contents">Table of Contents</h2>
+  <ol>
+    <li><a href="#module-overview">Module Overview</a></li>
+    <li><a href="#setup-steps">Setup Steps</a></li>
+    <li><a href="#cron-jobs--timing">Cron Jobs &amp; Timing</a></li>
+    <li><a href="#attendance-sync-logic">Attendance Sync Logic</a></li>
+    <li><a href="#system-parameters">System Parameters</a></li>
+    <li><a href="#troubleshooting">Troubleshooting</a></li>
+  </ol>
+  <hr>
+  <h2 id="module-overview">Module Overview</h2>
+  <p>This module connects:</p>
+  <ul>
+    <li><strong>OneDrive</strong> (Microsoft cloud storage) → Contains <code>.mdb</code> fingerprint attendance files
+    </li>
+    <li><strong>Odoo HR Attendance</strong> → Creates employee check-in/check-out records</li>
+  </ul>
+  <h3 id="data-flow">Data Flow</h3>
+  <pre><code>OneDrive (.mdb files)
+       ↓ [Daily Sync Cron]
+mdb.table.data (queued files)
+       ↓ [Process MDB Cron - Every 1 min]
+onedrive.attendance (raw fingerprint logs)
+       ↓ [HR Sync Cron - Daily at 1 AM]
+hr.attendance (Odoo HR records)
+</code></pre>
+  <hr>
+  <h2 id="setup-steps">Setup Steps</h2>
+  <h3 id="1-microsoft-azure-configuration">1. Microsoft Azure Configuration</h3>
+  <ol>
+    <li>Create an Azure App Registration</li>
+    <li>Set <strong>Redirect URI</strong> to: <code>https://your-odoo-domain/onedrive/authentication</code></li>
+    <li>Grant API permissions: <code>offline_access</code>, <code>Files.ReadWrite</code></li>
+    <li>Copy <strong>Client ID</strong>, <strong>Client Secret</strong>, and <strong>Tenant ID</strong></li>
+  </ol>
+  <h3 id="2-odoo-configuration">2. Odoo Configuration</h3>
+  <p>Go to <strong>Settings → General Settings → OneDrive Integration</strong>:</p>
+  <ul>
+    <li><strong>Client ID</strong>: From Azure</li>
+    <li><strong>Client Secret</strong>: From Azure</li>
+    <li><strong>Tenant ID</strong>: From Azure</li>
+    <li><strong>Folder Path</strong>: OneDrive folder containing MDB files (e.g., <code>ATT Data</code>)</li>
+  </ul>
+  <h3 id="3-employee-mapping">3. Employee Mapping</h3>
+  <p>Each employee needs a <strong>Fingerprint User ID</strong> to match device logs:</p>
+  <ol>
+    <li>Go to <strong>Employees → Select Employee → HR Settings tab</strong></li>
+    <li>Set <strong>Fingerprint User ID</strong> = Device User ID (from fingerprint device)</li>
+  </ol>
+  <hr>
+  <h2 id="cron-jobs--timing">Cron Jobs &amp; Timing</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Cron Job</th>
+        <th>Schedule</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>OneDrive: Daily Sync</strong></td>
+        <td>Every 1 Day</td>
+        <td>Scans OneDrive folder, queues new <code>.mdb</code> files</td>
+      </tr>
+      <tr>
+        <td><strong>OneDrive: Process MDB Imports</strong></td>
+        <td>Every 1 Minute</td>
+        <td>Downloads &amp; parses queued MDB files</td>
+      </tr>
+      <tr>
+        <td><strong>OneDrive: Sync Fingerprint to HR Attendance</strong></td>
+        <td>Daily at 1:00 AM (UTC-1)</td>
+        <td>Creates <code>hr.attendance</code> records from parsed logs</td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="recommended-sequence">Recommended Sequence</h3>
+  <ol>
+    <li><strong>Daily Sync</strong> runs first (e.g., at midnight)</li>
+    <li><strong>Process MDB</strong> runs immediately after (every minute until done)</li>
+    <li><strong>HR Attendance Sync</strong> runs last (at 1 AM when all data is ready)</li>
+  </ol>
+  <hr>
+  <h2 id="attendance-sync-logic">Attendance Sync Logic</h2>
+  <h3 id="check-in--check-out-rules">Check-In / Check-Out Rules</h3>
+  <p>The system uses <strong>&quot;First-In, Last-Activity&quot;</strong> logic:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>First log of the day (In or Out)</td>
+        <td>Creates new record with <code>check_in = check_out = log_time</code></td>
+      </tr>
+      <tr>
+        <td>Same day, additional log</td>
+        <td>Updates <code>check_out</code> to the new log time</td>
+      </tr>
+      <tr>
+        <td>New day, previous record open</td>
+        <td>Closes previous at 23:59:59, creates new record</td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="example-scenarios">Example Scenarios</h3>
+  <h4 id="scenario-1-normal-day">Scenario 1: Normal Day</h4>
+  <pre><code>09:00 Check-In  → Creates record: check_in=09:00, check_out=09:00
+18:00 Check-Out → Updates record: check_in=09:00, check_out=18:00
+Result: 1 record (9 hours worked)
+</code></pre>
+  <h4 id="scenario-2-multiple-badges-burst">Scenario 2: Multiple Badges (&quot;Burst&quot;)</h4>
+  <pre><code>09:00 Check-In  → Creates: check_in=09:00, check_out=09:00
+09:01 Check-In  → Updates: check_in=09:00, check_out=09:01
+09:05 Check-In  → Updates: check_in=09:00, check_out=09:05
+17:00 Check-Out → Updates: check_in=09:00, check_out=17:00
+17:05 Check-Out → Updates: check_in=09:00, check_out=17:05
+Result: 1 record (check_in=09:00, check_out=17:05)
+</code></pre>
+  <h4 id="scenario-3-forgot-to-check-out">Scenario 3: Forgot to Check Out</h4>
+  <pre><code>Day 1: 09:00 Check-In → Creates: check_in=09:00, check_out=09:00
+Day 2: 09:00 Check-In → Closes Day 1 at 23:59:59, Creates new Day 2 record
+Result: Day 1 record auto-closed, Day 2 starts fresh
+</code></pre>
+  <h4 id="scenario-4-single-log-day">Scenario 4: Single Log Day</h4>
+  <pre><code>12:00 Check-In (only log) → Creates: check_in=12:00, check_out=12:00
+Result: 1 record with 0 hours (valid but indicates incomplete data)
+</code></pre>
+  <hr>
+  <h2 id="system-parameters">System Parameters</h2>
+  <p>Configure these in <strong>Settings → Technical → System Parameters</strong>:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>onedrive_integration_odoo.attendance_sync_batch_size</code></td>
+        <td><code>2000</code></td>
+        <td>Records processed per cron run</td>
+      </tr>
+    </tbody>
+  </table>
+  <hr>
+  <h2 id="troubleshooting">Troubleshooting</h2>
+  <h3 id="sync-status-values">Sync Status Values</h3>
+  <ul>
+    <li><strong>pending</strong> - Waiting to be processed</li>
+    <li><strong>synced</strong> - Successfully created/updated HR attendance</li>
+    <li><strong>no_employee</strong> - No employee found with matching Fingerprint User ID</li>
+    <li><strong>error</strong> - Processing failed (check <code>sync_error</code> field)</li>
+  </ul>
+  <h3 id="common-issues">Common Issues</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Issue</th>
+        <th>Solution</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>&quot;No employee mapped&quot;</td>
+        <td>Set <code>Fingerprint User ID</code> on employee form</td>
+      </tr>
+      <tr>
+        <td>&quot;Historical records cannot be inserted&quot;</td>
+        <td>Log date is before existing attendance; reset attendance data</td>
+      </tr>
+      <tr>
+        <td>Duplicate entries</td>
+        <td>Check SQL constraint on <code>onedrive.attendance</code></td>
+      </tr>
+      <tr>
+        <td>Cron not running</td>
+        <td>Verify cron is active and check server logs</td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="manual-retry">Manual Retry</h3>
+  <ol>
+    <li>Go to <strong>OneDrive → Attendance Logs</strong></li>
+    <li>Filter by <code>Sync Status = Error</code></li>
+    <li>Select records → <strong>Action → Mark as To Sync</strong></li>
+    <li>Trigger sync cron or wait for next run</li>
+  </ol>
+  <hr>
+  <h2 id="menu-navigation">Menu Navigation</h2>
+  <ul>
+    <li><strong>OneDrive → Dashboard</strong> - Main OneDrive file browser</li>
+    <li><strong>OneDrive → MDB Data</strong> - View imported table data</li>
+    <li><strong>OneDrive → Attendance Logs</strong> - Raw fingerprint logs with sync status</li>
+    <li><strong>Settings → Scheduled Actions</strong> - Configure cron timing</li>
+    <li><strong>HR → Attendance</strong> - Final synced attendance records</li>
+  </ul>
+
+
+
+</body>
+
+</html>
