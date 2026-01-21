@@ -68,8 +68,10 @@ class OneDriveAttendance(models.Model):
             pending_logs = specific_logs.sorted(key=lambda r: (r.user_id, r.check_time))
             _logger.info(f"Processing specific batch of {len(pending_logs)} logs.")
         else:
-            # Limit batch size to prevent timeout
-            BATCH_SIZE = 2000
+            # Get batch size from system parameters (default: 2000)
+            BATCH_SIZE = int(self.env['ir.config_parameter'].sudo().get_param(
+                'onedrive_integration_odoo.attendance_sync_batch_size', 2000
+            ))
             
             # Get all pending logs, ordered by user and time
             # Also include 'error' status logs to retry them automatically

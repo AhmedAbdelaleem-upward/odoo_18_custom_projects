@@ -22,5 +22,11 @@
             <field name="nextcall" eval="(DateTime.now().replace(hour=23, minute=0, second=0)).strftime('%Y-%m-%d %H:%M:%S')"/>
             <field name="active" eval="True"/>
         </record>
+
+        <!-- System Parameters -->
+        <record id="config_attendance_sync_batch_size" model="ir.config_parameter">
+            <field name="key">onedrive_integration_odoo.attendance_sync_batch_size</field>
+            <field name="value">2000</field>
+        </record>
     </data>
 </odoo>
