@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
+    <data noupdate="1">
         <record id="portal_user_bashraheel" context="{'no_reset_password': True}" model="res.users">
             <field name="partner_id" ref="res_partner_bashraheel_default"/>
             <field name="login">bashraheel_portal</field>

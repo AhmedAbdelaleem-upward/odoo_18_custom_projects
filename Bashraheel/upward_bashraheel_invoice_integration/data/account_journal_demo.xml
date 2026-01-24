@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="0">
+    <data noupdate="1">
 
         <!-- Demo Sales Journal for Third-Party Integration -->
         <record id="journal_thirdparty_store_001" model="account.journal">
